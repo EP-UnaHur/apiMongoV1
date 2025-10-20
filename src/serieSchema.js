@@ -1,6 +1,7 @@
 const mongoose = require("mongoose");
 
 const seriesSchema = new mongoose.Schema({
+  plataforma: { type: mongoose.Schema.Types.ObjectId, ref: "Plataforma" },
   titulo: {
     type: String,
     required: true,

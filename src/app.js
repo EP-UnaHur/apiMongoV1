@@ -1,22 +1,46 @@
 const express = require("express");
 const connectToDatabase = require("./db");
 const Series = require("./serieSchema");
+const Plataforma = require("./plataformaSchema");
 
 const app = express();
 
 app.use(express.json());
 
-app.get("/", async (req, res) => {
-  const series = await Series.find({});
+app.get("/plataforma", async (req, res) => {
+  const plataformas = await Plataforma.find({});
+  res.status(200).json(plataformas);
+});
+
+app.post("/plataforma", async (req, res) => {
+  const plataforma = await Plataforma.create(req.body);
+  res.status(201).json(plataforma);
+});
+
+app.get("/series", async (req, res) => {
+  const series = await Series.find({}).populate({
+    path: "plataforma",
+    select: "nombre",
+  });
   res.status(200).json(series);
 });
 
-app.post("/", async (req, res) => {
+app.post("/series", async (req, res) => {
   const serie = await Series.create(req.body);
   res.status(201).json(serie);
 });
 
-app.post("/:serieId/capitulo", async (req, res) => {
+app.post("/series/:plataforma", async (req, res) => {
+  const id = req.params.plataforma;
+  const plataforma = await Plataforma.findById(id);
+  const serie = await Series.create({
+    plataforma: plataforma._id,
+    ...req.body,
+  });
+  res.status(201).json(serie);
+});
+
+app.post("/series/:serieId/capitulo", async (req, res) => {
   const serieId = req.params.serieId;
   try {
     const serie = await Series.findByIdAndUpdate(
